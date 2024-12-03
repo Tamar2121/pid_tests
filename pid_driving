@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+
+# Import the necessary libraries
+import time
+import math
+from ev3dev2.motor import *
+from ev3dev2.sound import Sound
+from ev3dev2.button import Button
+from ev3dev2.sensor import *
+from ev3dev2.sensor.lego import *
+from ev3dev2.sensor.virtual import *
+
+# Create the sensors and motors objects
+motorA = LargeMotor(OUTPUT_A)
+motorB = LargeMotor(OUTPUT_B)
+left_motor = motorA
+right_motor = motorB
+tank_drive = MoveTank(OUTPUT_A, OUTPUT_B)
+steering_drive = MoveSteering(OUTPUT_A, OUTPUT_B)
+
+spkr = Sound()
+btn = Button()
+radio = Radio()
+
+color_sensor_in1 = ColorSensor(INPUT_1)
+ultrasonic_sensor_in2 = UltrasonicSensor(INPUT_2)
+gyro_sensor_in3 = GyroSensor(INPUT_3)
+gps_sensor_in4 = GPSSensor(INPUT_4)
+pen_in5 = Pen(INPUT_5)
+
+motorC = LargeMotor(OUTPUT_C) # Magnet
+
+# Here is where your code starts
+
+sp = None
+pv = None
+ERROR = None
+speedL = None
+speedR = None
+def_speed = None
+
+# Describe this function...
+def gyro_tern(sp):
+    global pv, ERROR, speedL, speedR, def_speed
+    pv = gyro_sensor_in3.angle
+    ERROR = pv - sp
+    if ERROR > 100:
+        ERROR = 100
+    if ERROR < -100:
+        ERROR = -100
+    tank_drive.on((-1 * ERROR), ERROR)
+
+# Describe this function...
+def go_us(sp):
+    global pv, ERROR, speedL, speedR, def_speed
+    pv = ultrasonic_sensor_in2.distance_centimeters
+    ERROR = pv - sp
+    if ERROR > 100:
+        ERROR = 100
+    if ERROR < -100:
+        ERROR = -100
+    tank_drive.on(ERROR, ERROR)
+
+# Describe this function...
+def steer(ang):
+    global pv, ERROR, speedL, speedR, def_speed
+    pv = gyro_sensor_in3.angle
+    def_speed = 50
+    for count in range(1000):
+     #tank_drive.off(brake=true)
+    #while ultrasonic_sensor_in2.distance_centimeters > 100:
+     ERROR = ang - pv
+     speedL = def_speed +ERROR
+     speedR = def_speed -ERROR
+    if speedL > 100:
+        speedR = 100
+    if speedR < -100:
+        speedL = -100
+    tank_drive.on(speedL, speedR)
+#print('finished')
+
+for count in range(2000):    
+    steer(0)
+
+
+print('finished')
+
